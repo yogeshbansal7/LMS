@@ -11,10 +11,7 @@ const bookSchema = new mongoose.Schema({
     isbn : {
         type : Number
     },
-    issuedTo : {
-        type: mongoose.Schema.Types.ObjectId,
-		ref: "User",
-    },
+    
     category: {
         // type: mongoose.Schema.Types.ObjectId,
 		// 	ref: "Category",
@@ -25,7 +22,17 @@ const bookSchema = new mongoose.Schema({
     },
     fine : {type: Number},
     duration : {type: Number, default: 7},
-    price: {type: Number}
+    price: {type: Number},
+    issuedDate: {
+        type: Date
+    },
+    returnDate: {
+        type: Date
+    },
+    issuedTo : {
+        type: mongoose.Schema.Types.ObjectId,
+		ref: "User",
+    },
 
 });
 
