@@ -2,12 +2,7 @@ const mongoose = require("mongoose")
 
 const userSchema = new mongoose.Schema(
   {
-    firstName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    lastName: {
+    name: {
       type: String,
       required: true,
       trim: true,
@@ -25,7 +20,7 @@ const userSchema = new mongoose.Schema(
     accountType: {
       type: String,
       enum: ["User", "Admin", "Librarian"],
-      required: true,
+      // required: true,
     },
     active: {
       type: Boolean,
@@ -47,7 +42,7 @@ const userSchema = new mongoose.Schema(
     issuedBooks : [
       {
         type: mongoose.Schema.Types.ObjectId,
-			  ref: "Book",
+        ref: "Book",
       }
     ],
     fine : {
@@ -60,3 +55,4 @@ const userSchema = new mongoose.Schema(
 
 // Export the Mongoose model for the user schema, using the name "user"
 module.exports = mongoose.model("User", userSchema)
+

@@ -9,23 +9,21 @@ require("dotenv").config()
 
 
 exports.signup = async (req, res) => {
+
+  console.log("entering in signup api")
+  console.log(req.body)
+
   try {
     const {
-      firstName,
-      lastName,
+      name,
       email,
       password,
-      confirmPassword,
-      accountType,
-      contactNumber,
       otp,
     } = req.body
     if (
-      !firstName ||
-      !lastName ||
+      !name ||
       !email ||
       !password ||
-      !confirmPassword ||
       !otp
     ) {
       return res.status(403).send({
@@ -33,14 +31,7 @@ exports.signup = async (req, res) => {
         message: "All Fields are required",
       })
     }
-    // Check if password and confirm password match
-    if (password !== confirmPassword) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Password and Confirm Password do not match. Please try again.",
-      })
-    }
+    
 
     // Check if user already exists
     const existingUser = await User.findOne({ email })
@@ -51,36 +42,48 @@ exports.signup = async (req, res) => {
       })
     }
 
+
+
     const response = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1)
     console.log(response)
     if (response.length === 0) {
+      
       return res.status(400).json({
         success: false,
         message: "The OTP is not valid",
       })
-    } else if (otp !== response[0].otp) {
+    } else if (parseInt(otp) !== parseInt(response[0].otp)) {
+
       // Invalid OTP
+
       return res.status(400).json({
         success: false,
         message: "The OTP is not valid",
       })
+
+
     }
 
+
+
     const hashedPassword = await bcrypt.hash(password, 10)
+    
 
     let approved = ""
     approved === "Librarian" ? (approved = false) : (approved = true)
 
+    let accountType = "User"
+
     
     const user = await User.create({
-      firstName,
-      lastName,
+      name,
       email,
-      contactNumber,
       password: hashedPassword,
       accountType: accountType,
-      approved: approved,
     })
+
+
+    console.log(user)
 
     return res.status(200).json({
       success: true,
@@ -97,6 +100,9 @@ exports.signup = async (req, res) => {
 }
 
 exports.login = async (req, res) => {
+  console.log("entered in login pageeee")
+  console.log(req.body);
+
   try {
     const { email, password } = req.body
 
@@ -107,7 +113,10 @@ exports.login = async (req, res) => {
       })
     }
 
+    
+
     const user = await User.findOne({ email })
+    
 
     if (!user) {
       return res.status(401).json({
@@ -115,6 +124,8 @@ exports.login = async (req, res) => {
         message: `User is not Registered with Us Please SignUp to Continue`,
       })
     }
+
+    console.log("234234")
 
     if (await bcrypt.compare(password, user.password)) {
       const token = jwt.sign(
@@ -127,17 +138,27 @@ exports.login = async (req, res) => {
 
       user.token = token
       user.password = undefined
-      const options = {
-        expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-        httpOnly: true,
-      }
-      res.cookie("token", token, options).status(200).json({
-        success: true,
+      // const options = {
+      //   expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+      //   httpOnly: true,
+      // }
+      // res.cookie("token", token, options).status(200).json({
+      //   success: true,
+      //   token,
+      //   user,
+      //   message: `User Login Success`,
+      // })
+
+      res.status(200).json({
         token,
         user,
-        message: `User Login Success`,
+        success: true,
+        message: `Login Successfully`,
       })
-    } else {
+    }
+
+
+    else {
       return res.status(401).json({
         success: false,
         message: `Password is incorrect`,
@@ -153,8 +174,11 @@ exports.login = async (req, res) => {
 }
 
 exports.sendotp = async (req, res) => {
+  console.log("sending otp")
+  console.log(req.body)
   try {
     const { email } = req.body
+    console.log(email)
     const checkUserPresent = await User.findOne({ email })
 
     if (checkUserPresent) {
@@ -164,7 +188,7 @@ exports.sendotp = async (req, res) => {
       })
     }
 
-    var otp = otpGenerator.generate(6, {
+    var otp = otpGenerator.generate(4, {
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
       specialChars: false,
@@ -175,7 +199,7 @@ exports.sendotp = async (req, res) => {
     console.log("OTP", otp)
     console.log("Result", result)
     while (result) {
-      otp = otpGenerator.generate(6, {
+      otp = otpGenerator.generate(4, {
         upperCaseAlphabets: false,
       })
     }
@@ -187,6 +211,9 @@ exports.sendotp = async (req, res) => {
       message: `OTP Sent Successfully`,
       otp,
     })
+
+
+    console.log("done")
   } catch (error) {
     console.log(error.message)
     return res.status(500).json({ success: false, error: error.message })

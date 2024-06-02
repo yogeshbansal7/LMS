@@ -6,7 +6,7 @@ const router = express.Router()
 const { auth, isLibrarian } = require("../middleware/auth")
 const { addbook, allbooks, issue, createRequest, reviewRequest, approveRequest } = require("../controllers/book")
 
-router.post("/add", auth, isLibrarian, addbook)
+router.post("/add", addbook)
 router.get("/all", allbooks)
 // router.post("/issue", auth, isLibrarian, issue)
 router.post("/createRequest", createRequest)
