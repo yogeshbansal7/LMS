@@ -1,24 +1,18 @@
 
 const bcrypt = require("bcrypt")
 const User = require("../models/User")
-const IssueRequest = require("../models/Request")
 const jwt = require("jsonwebtoken")
 const mailSender = require("../utils/mailSender")
 const Book = require("../models/Book")
 const { uploadImageToCloudinary } = require("../utils/imageUploader")
 require("dotenv").config()
 
-
 exports.addbook = async (req, res) => {
-  console.log("wgefvjsbfekwjefb");
+  console.log("adding book....")
 
-  const { title, author, isbn, category, amount, notes, shelf } = req.body;
+  const { title, author, isbn, category, amount, notes, shelf, quantity } = req.body;
   const thumbnail = req.files.file
   try{
-
-    console.log(req.files)
-    console.log(req.body);
-    // return;
 
 
     const thumbnailImage = await uploadImageToCloudinary(
@@ -26,6 +20,7 @@ exports.addbook = async (req, res) => {
         process.env.FOLDER_NAME
       )
       console.log(thumbnailImage)
+      
 
 
     const newBook = new Book({
@@ -36,17 +31,12 @@ exports.addbook = async (req, res) => {
       category,
       rackNo : shelf,
       price : amount,
-      imageUrl : thumbnailImage.secure_url
+      imageUrl : thumbnailImage.secure_url,
+      quantity: quantity
     });
 
-
-    console.log("printtttttttttttt")
-      console.log(newBook)
-
-      console.log("Hogi addddddd")
-
-  
-
+    console.log(newBook)
+    console.log("Done adding a book")
     await newBook.save();
 
     res.status(201).json({ message: 'Book added successfully.', book: newBook });
@@ -69,127 +59,124 @@ const shuffleArray = (array) => {
 exports.allbooks = async (req, res) => {
   console.log("cominngggggggggg")
   try {
-    let books = await Book.find().populate('issuedTo'); // Fetch the books
-    books = shuffleArray(books); // Shuffle the books
-    res.status(200).json({ books }); // Send the shuffled books
+    let books = await Book.find(); 
+    books = shuffleArray(books); 
+    res.status(200).json({ books });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
+exports.oneBook = async (req, res) => {
+  const { uniqueId } = req.params;
 
-// exports.allbooks = async (req, res) => {
-//     try {
-//         const books = await Book.find().populate('issuedTo');
-//         res.status(200).json({ books });
-//       } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ error: 'Internal Server Error' });
-//       }
-// }
+  try {
+      const book = await Book.findOne({ uniqueIds: { $in: [uniqueId] } });
+      if (!book) {
+          return res.status(404).json({ message: "Book not found" });
+      }
 
-// exports.issue = async (req, res) => {
-//     try {
-//         const { bookId, userId } = req.body;
-    
-//         const book = await Book.findById(bookId);
-//         if (!book) {
-//           return res.status(404).json({ error: 'Book not found' });
-//         }
-    
-//         const user = await User.findById(userId);
-//         if (!user) {
-//           return res.status(404).json({ error: 'User not found' });
-//         }
-    
-//         if (book.issuedTo) {
-//           return res.status(400).json({ error: 'Book is already issued' });
-//         }
-    
-//         book.issuedTo = userId;
-//         await book.save();
-    
-//         user.issuedBooks.push(bookId);
-//         await user.save();
-    
-//         res.status(200).json({ message: 'Book issued successfully' });
-//       } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ error: 'Internal Server Error' });
-//       }
-// }
+      res.status(200).json({ message: "Book found", book: book });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.oneBookByCreatedId = async (req, res) => {
+
+  const uniqueId= req.params.uni;
+
+  try {
+    // Query the database to find the book
+    const book = await Book.findOne({ isbn: uniqueId });
+
+    if (!book) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+
+    // Return book details
+    res.status(200).json( book );
+  } catch (err) {
+    console.error("Error:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
 
 exports.createRequest = async (req, res) => {
+  const { userId, bookId } = req.params;
+  console.log(req.params);
+  console.log("Creating Request")
     try {
-        const { bookId, userId } = req.body;
-            const book = await Book.findById(bookId);
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        const book = await Book.findById(bookId);
         if (!book) {
-          return res.status(404).json({ error: 'Book not found' });
+            return res.status(404).json({ error: "Book not found" });
         }
-    
-        if (book.issuedTo) {
-          return res.status(400).json({ error: 'Book is already issued' });
+
+        if (user.issuedBooks.some(req => req.book.toString() === bookId)) {
+            return res.status(400).json({ error: "You have already requested this book" });
         }
-    
-        const request = new IssueRequest({
-          book: bookId,
-          user: userId,
-          status: 'pending'
-        });
-        await request.save();
-        
-        res.status(200).json({ message: 'Book issue request sent for approval' });
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
-      }
+
+        const request = {bookName: book.name, bookIsbn: book.isbn , book: bookId, status: "pending" };
+        user.issuedBooks.push(request);
+        await user.save();
+
+        console.log("Successfully requeest created")
+
+        res.status(201).json({ message: "Request sent successfully", request });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 }
 
 exports.reviewRequest = async (req, res) => {
-    try {
-        const requests = await IssueRequest.find({ status: 'pending' }).populate('book').populate('user');
-        res.status(200).json( requests );
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
-      }
-}
-
-exports.approveRequest = async(req, res) => {
-    try {
-        const { requestId, status } = req.body;
-
-        if (!requestId || !status || !['approved', 'rejected'].includes(status)) {
-            return res.status(400).json({ error: 'Invalid request body' });
-        }
-
-        const request = await IssueRequest.findById(requestId);
-        if (!request) {
-            return res.status(404).json({ error: 'Request not found' });
-        }
-
-        request.status = status;
-        await request.save();
-
-        if (status === 'approved') {
-            const book = await Book.findById(request.book);
-            const user = await User.findById(request.user);
-
-            if (!book || !user) {
-                return res.status(404).json({ error: 'Book or user not found' });
-            }
-
-            book.issuedTo = user._id;
-            await book.save();
-
-            user.issuedBooks.push(book._id);
-            await user.save();
-        }
-
-        res.status(200).json({ message: 'Request reviewed successfully' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+  try {
+    const users = await User.find();
+    if (!users || users.length === 0) {
+      return res.status(404).json({ error: "No users found" });
     }
+
+    let allRequests = [];
+    users.forEach(user => {
+      allRequests = allRequests.concat(user.issuedBooks);
+    });
+
+    res.status(200).json(allRequests );
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 }
+exports.approveRequest = async (req, res) => {
+  const { userId, bookId } = req.params;
+  console.log(req.params)
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    console.log(user.issuedBooks)
+
+    const request = user.issuedBooks.find(req => req.book.toString() === bookId && req.status === "pending");
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+    request.status = "approved";
+
+    await user.save();
+    console.log("Successfully approved request");
+    res.status(200).json({ message: "Request approved successfully", request });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};

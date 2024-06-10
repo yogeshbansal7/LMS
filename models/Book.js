@@ -4,18 +4,20 @@ const mongoose = require("mongoose");
 const bookSchema = new mongoose.Schema({
 	name: {
 		type: String,
-		required: true,
 	},
 	description: { type: String },
 	author : {type: String},
     isbn : {
         type : Number
     },
-    
     category: {
         // type: mongoose.Schema.Types.ObjectId,
 		// 	ref: "Category",
         type:String
+    },
+    quantity: {
+        type: Number,
+        default: 1
     },
     rackNo : {
         type: Number
@@ -29,13 +31,9 @@ const bookSchema = new mongoose.Schema({
     returnDate: {
         type: Date
     },
-    issuedTo : {
-        type: mongoose.Schema.Types.ObjectId,
-		ref: "User",
-    },
     imageUrl : {
         type : String
-    }
+    },
 
 });
 

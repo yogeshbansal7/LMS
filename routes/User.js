@@ -6,6 +6,7 @@ const {
   signup,
   sendotp,
   changePassword, 
+  getDetailOfUser
 } = require("../controllers/Auth")
 const {
   resetPasswordToken,
@@ -18,7 +19,7 @@ router.post("/login", login)
 router.post("/signup", signup)
 router.post("/sendotp", sendotp)
 router.post("/changepassword", auth, changePassword)
-
+router.get("/:id", getDetailOfUser)
 router.post("/reset-password-token", resetPasswordToken)
 router.post("/reset-password", resetPassword)
 

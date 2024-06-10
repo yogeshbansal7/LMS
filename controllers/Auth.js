@@ -8,10 +8,31 @@ const { passwordUpdated } = require("../mail/templates/passwordUpdate")
 require("dotenv").config()
 
 
+exports.getDetailOfUser = async(req, res) => {
+  const { id } = req.params;
+  console.log(req.params);
+  console.log("Fetching detail of user with user id", id);
+
+  try {
+    // const user = await User.findById(id).populate('issuedBooks.book')
+    const user = await User.findById(id)
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    console.log(user)
+    res.status(200).json( user );
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
 exports.signup = async (req, res) => {
 
   console.log("entering in signup api")
   console.log(req.body)
+
+
 
   try {
     const {
@@ -19,19 +40,20 @@ exports.signup = async (req, res) => {
       email,
       password,
       otp,
+      actType
     } = req.body
     if (
       !name ||
       !email ||
-      !password ||
-      !otp
+      !password 
+      // !otp
     ) {
       return res.status(403).send({
         success: false,
         message: "All Fields are required",
       })
     }
-    
+    const hashedPassword = await bcrypt.hash(password, 10)
 
     // Check if user already exists
     const existingUser = await User.findOne({ email })
@@ -40,6 +62,25 @@ exports.signup = async (req, res) => {
         success: false,
         message: "User already exists. Please sign in to continue.",
       })
+    }
+
+    if(actType == "Librarian"){
+      const user = await User.create({
+        name,
+        email,
+        password: hashedPassword,
+        accountType: actType,
+      })
+
+      console.log("Librarian added succesfully")
+      console.log(user)
+
+      return res.status(200).json({
+        success: true,
+        user,
+        message: "User registered successfully",
+      })
+  
     }
 
 
@@ -54,7 +95,6 @@ exports.signup = async (req, res) => {
       })
     } else if (parseInt(otp) !== parseInt(response[0].otp)) {
 
-      // Invalid OTP
 
       return res.status(400).json({
         success: false,
@@ -62,15 +102,12 @@ exports.signup = async (req, res) => {
       })
 
 
-    }
-
-
-
-    const hashedPassword = await bcrypt.hash(password, 10)
+    }  
+    
     
 
     let approved = ""
-    approved === "Librarian" ? (approved = false) : (approved = true)
+    approved === "Librarian" ? (approved = false) : (approved = true)  
 
     let accountType = "User"
 
@@ -150,7 +187,7 @@ exports.login = async (req, res) => {
       // })
 
       res.status(200).json({
-        token,
+    
         user,
         success: true,
         message: `Login Successfully`,
@@ -275,3 +312,6 @@ exports.changePassword = async (req, res) => {
     })
   }
 } 
+
+// B@gmail.comp
+// 1212

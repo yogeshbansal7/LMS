@@ -1,58 +1,60 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema(
-  {
+const userSchema = new mongoose.Schema({
     name: {
-      type: String,
-      required: true,
-      trim: true,
+        type: String,
+        required: true,
+        trim: true,
     },
     email: {
-      type: String,
-      required: true,
-      trim: true,
+        type: String,
+        required: true,
+        trim: true,
     },
-
     password: {
-      type: String,
-      required: true,
+        type: String,
+        required: true,
     },
     accountType: {
-      type: String,
-      enum: ["User", "Admin", "Librarian"],
-      // required: true,
+        type: String,
+        // enum: ["User", "Admin", "Librarian"],
+        // required: true,
     },
     active: {
-      type: Boolean,
-      default: true,
+        type: Boolean,
+        default: true,
     },
     approved: {
-      type: Boolean,
-      default: true,
+        type: Boolean,
+        default: true,
     },
     token: {
-      type: String,
+        type: String,
     },
     resetPasswordExpires: {
-      type: Date,
+        type: Date,
     },
     image: {
-      type: String,
+        type: String,
     },
-    issuedBooks : [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Book",
-      }
+    issuedBooks: [
+        {   
+            bookName: String,
+            bookIsbn : Number,
+            book: { type: mongoose.Schema.Types.ObjectId, ref: "Book" },
+            status: {
+                type: String,
+                enum: ["pending", "approved", "rejected"],
+                default: "pending"
+            }
+        }
     ],
-    fine : {
-      type : Number,
-      default : 0
+    fine: {
+        type: Number,
+        default: 0
     },
-  },
-  { timestamps: true }
-)
+  
+}, { timestamps: true });
 
 // Export the Mongoose model for the user schema, using the name "user"
-module.exports = mongoose.model("User", userSchema)
-
+module.exports = mongoose.model("User", userSchema);
