@@ -16,44 +16,45 @@ exports.createLibrary = async (req, res) => {
 };
 
 
-exports.check = async(req, res) => {
+exports.check = async (req, res) => {
     try {
         const { userId } = req.body;
-        const library = await Library.findOne();
+        const library = await Library.findOne(); // Assuming there's only one library entry in the database
         const index = library.users.indexOf(userId);
         if (index !== -1) {
             // User is already present, so check them out
-            library.occupiedSeats--;
+            library.present--;
             library.users.splice(index, 1);
             await library.save();
             res.json({ 
-                message: 'Checked out successfully' ,
-                occupied: occupiedSeats,
-                total: totalSeats
+                message: 'User checked out successfully' ,
+                present: library.present,
+                capacity: library.capacity,
+                total: library.total
+                
+
+                
+                
             });
         } else {
-            if (library.occupiedSeats < library.totalSeats) {
-                // User is not present and there is space, so check them in
-                library.occupiedSeats++;
+            // User is not present, so check them in
+            if (library.present < library.capacity) {
+                library.present++;
                 library.users.push(userId);
                 await library.save();
-                res.json({ 
-                    message: 'Checked in successfully' ,
-                    occupied: occupiedSeats,
-                    total: totalSeats
-                });
+                res.json({ message: 'User checked in successfully' ,
+                present: library.present,
+                capacity: library.capacity,
+                total: library.total });
             } else {
-                
-                res.status(400).json({ 
-                    message: 'Library is full' ,
-                    occupied: occupiedSeats,
-                    total: totalSeats
-                });
+                res.status(400).json({ message: 'library is full' ,
+                present: library.present,
+                capacity: library.capacity,
+                total: library.total});
             }
         }
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({message: 'internal server error'  });
     }
-  
-}
+};
