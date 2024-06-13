@@ -32,9 +32,6 @@ exports.signup = async (req, res) => {
 
   console.log("entering in signup api")
   console.log(req.body)
-
-
-
   try {
     const {
       name,
@@ -43,6 +40,15 @@ exports.signup = async (req, res) => {
       otp,
       actType
     } = req.body
+
+    console.log(req.body)
+
+
+
+
+
+
+  
     if (
       !name ||
       !email ||
