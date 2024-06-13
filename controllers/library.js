@@ -1,6 +1,21 @@
 const User = require("../models/User")
 const Library = require("../models/Library")
 
+exports.createLibrary = async (req, res) => {
+    try {
+        const { capacity } = req.body;
+        const library = new Library({ 
+            capacity, 
+           });
+        await library.save();
+        res.json(library);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+
 exports.check = async(req, res) => {
     try {
         const { userId } = req.body;

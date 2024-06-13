@@ -3,6 +3,7 @@ const app = express()
 const userRoutes = require("./routes/User")
 const bookRoutes = require("./routes/Book")
 const eventRoutes = require("./routes/Event")
+const libraryRoutes = require("./routes/Library")
 
 const database = require("./config/database")
 const cookieParser = require("cookie-parser")
@@ -38,6 +39,7 @@ app.use(
 app.use("/api/v1/auth", userRoutes)
 app.use("/api/v1/book", bookRoutes)
 app.use("/api/v1/event", eventRoutes)
+app.use("/api/v1/library", libraryRoutes)
 
 app.get("/", (req, res) => {
   return res.json({

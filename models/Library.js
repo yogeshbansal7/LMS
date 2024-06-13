@@ -6,10 +6,12 @@ const librarySchema = new mongoose.Schema({
         type: Number,
     },
     total: {
-        type: Number
+        type: Number,
+        default: 0
     },
     present: {
-        type: Number
+        type: Number,
+        default: 0
     },
     users: [
         {
