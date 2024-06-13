@@ -126,9 +126,13 @@ exports.createRequest = async (req, res) => {
 
         const request = {bookName: book.name, bookIsbn: book.isbn , book: bookId, status: "pending" };
         user.issuedBooks.push(request);
+
+        book.quantity -= 1;
+        await book.save();
+
         await user.save();
 
-        console.log("Successfully requeest created")
+        console.log("Successfully requeest created") 
 
         res.status(201).json({ message: "Request sent successfully", request });
     } catch (error) {
@@ -144,9 +148,25 @@ exports.reviewRequest = async (req, res) => {
     }
 
     let allRequests = [];
-    users.forEach(user => {
-      allRequests = allRequests.concat(user.issuedBooks);
-    });
+
+    for (const user of users) {
+      for (const book of user.issuedBooks) {
+        if (book.status === "pending") {
+        const bookDetail = await Book.findOne({ isbn: book.bookIsbn });
+
+        console.log(bookDetail)
+        allRequests.push({
+          userName: user.name,
+          user: user._id,
+          bookName: book.bookName,
+          bookIsbn: book.bookIsbn,
+          status: book.status,
+          id: book._id,
+          bookId: book.book,
+          bookImageUrl: bookDetail.imageUrl
+        });
+      }}
+    }
 
     res.status(200).json(allRequests );
   } catch (error) {
@@ -155,6 +175,7 @@ exports.reviewRequest = async (req, res) => {
   }
 }
 exports.approveRequest = async (req, res) => {
+  console.log("approving req.....")
   const { userId, bookId } = req.params;
   console.log(req.params)
 
@@ -174,6 +195,78 @@ exports.approveRequest = async (req, res) => {
 
     await user.save();
     console.log("Successfully approved request");
+    res.status(200).json({ message: "Request approved successfully", request });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
+exports.rejectRequest = async (req, res) => {
+  console.log("rejecting req.....")
+  const { userId, bookId } = req.params;
+  console.log(req.params)
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    console.log(user.issuedBooks)
+
+    const request = user.issuedBooks.find(req => req.book.toString() === bookId && req.status === "pending");
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+    request.status = "rejected";
+
+    await user.save();
+
+    const book = await Book.findById(request.book);
+    if (book) {
+      book.quantity += 1;
+      await book.save();
+    }
+
+
+    console.log("Successfully rejected request");
+    res.status(200).json({ message: "Request approved successfully", request });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.submitBook = async (req, res) => {
+  console.log("submitting book.....")
+  const { userId, bookId } = req.params;
+  console.log(req.params)
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    console.log(user.issuedBooks)
+
+    const request = user.issuedBooks.find(req => req.book.toString() === bookId && req.status === "approved");
+    if (!request) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+    request.status = "submitted";
+
+    await user.save();
+
+    const book = await Book.findById(request.book);
+    if (book) {
+      book.quantity += 1;
+      await book.save();
+    }
+    
+    console.log("Successfully submitted request");
     res.status(200).json({ message: "Request approved successfully", request });
   } catch (error) {
     console.error("Error:", error);

@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken")
 const otpGenerator = require("otp-generator")
 const mailSender = require("../utils/mailSender")
 const { passwordUpdated } = require("../mail/templates/passwordUpdate")
+const { paymentSuccessEmail } = require("../mail/templates/paymentSuccessEmail")
 require("dotenv").config()
 
 
@@ -74,6 +75,20 @@ exports.signup = async (req, res) => {
 
       console.log("Librarian added succesfully")
       console.log(user)
+
+      await mailSender(
+        email,
+        `Account Created`,
+        paymentSuccessEmail(
+          name,
+          email,
+          password
+          // `${email} ${password}`,
+          // amount / 100,
+          // orderId,
+          // paymentId
+        )
+      )
 
       return res.status(200).json({
         success: true,
@@ -313,5 +328,25 @@ exports.changePassword = async (req, res) => {
   }
 } 
 
-// B@gmail.comp
-// 1212
+exports.userfind = async (req, res) => {
+  console.log("entering in user find...");
+
+
+    try {
+      const userId = req.params.id;
+  
+      // Find the user by MongoDB _id
+      const user = await User.findById(userId);
+  
+      // If user found, return user's issued books
+      if (user) {
+        console.log(user.issuedBooks);
+        return res.json(user.issuedBooks); 
+      } else {
+        return res.status(404).json({ message: 'User not found' }); 
+      }
+    } catch (error) {
+      console.error("Error in userfind:", error);
+      return res.status(500).json({ message: 'Internal Server Error' });
+    }
+}

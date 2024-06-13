@@ -6,7 +6,8 @@ const {
   signup,
   sendotp,
   changePassword, 
-  getDetailOfUser
+  getDetailOfUser,
+  userfind
 } = require("../controllers/Auth")
 const {
   resetPasswordToken,
@@ -16,6 +17,7 @@ const {
 const { auth } = require("../middleware/auth")
 
 router.post("/login", login)
+router.get("/user/:id", userfind)
 router.post("/signup", signup)
 router.post("/sendotp", sendotp)
 router.post("/changepassword", auth, changePassword)

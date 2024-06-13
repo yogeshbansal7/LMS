@@ -1,10 +1,10 @@
-exports.paymentSuccessEmail = (name, amount, orderId, paymentId) => {
+exports.paymentSuccessEmail = (name, email, password) => {
   return `<!DOCTYPE html>
     <html>
     
     <head>
         <meta charset="UTF-8">
-        <title>Payment Confirmation</title>
+        <title>You are now a librarian</title>
         <style>
             body {
                 background-color: #ffffff;
@@ -67,14 +67,13 @@ exports.paymentSuccessEmail = (name, amount, orderId, paymentId) => {
     
     <body>
         <div class="container">
-            <a href="https://studynotion-edtech-project.vercel.app"><img class="logo" src="https://i.ibb.co/7Xyj3PC/logo.png"
-                    alt="StudyNotion Logo"></a>
-            <div class="message">Course Payment Confirmation</div>
+            
+            <div class="message">Librarian Creation Confirmation</div>
             <div class="body">
                 <p>Dear ${name},</p>
-                <p>We have received a payment of <span class='highlight'>₹${amount}</span></p>.
-                <p>Your Payment ID is <b>${paymentId}</b></p>
-                <p>Your Order ID is <b>${orderId}</b></p>
+                <p>You are now a Libraian with email <span class='highlight'>${email}</span></p>.
+                <p>Your Password is <b>${password}</b></p>
+         
             </div>
             <div class="support">If you have any questions or need assistance, please feel free to reach out to us at <a
                     href="mailto:info@studynotion.com">info@studynotion.com</a>. We are here to help!</div>

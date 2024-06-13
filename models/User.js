@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema({
             book: { type: mongoose.Schema.Types.ObjectId, ref: "Book" },
             status: {
                 type: String,
-                enum: ["pending", "approved", "rejected"],
+                enum: ["pending", "approved", "rejected", "submitted"],
                 default: "pending"
             }
         }
