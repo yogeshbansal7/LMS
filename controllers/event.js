@@ -41,6 +41,8 @@ exports.allevent = async(req, res) => {
     try {
         // Query all events from the database
         const events = await Event.find();
+
+        console.log(events)
     
         res.status(200).json(events);
       } catch (error) {
