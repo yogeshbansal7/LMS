@@ -1,5 +1,7 @@
 const Event = require("../models/Event")
 const { uploadImageToCloudinary } = require("../utils/imageUploader")
+require("dotenv").config()
+
 
 exports.addevent = async(req, res) => {
     try {
