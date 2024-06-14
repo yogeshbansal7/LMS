@@ -58,3 +58,23 @@ exports.check = async (req, res) => {
         res.status(500).json({message: 'internal server error'   });
     }
 };
+
+
+
+exports.detail = async (req, res) => {
+    try {
+        // Find the library
+        const library = await Library.findOne();
+        
+        if (!library) {
+          return res.status(404).json({ message: "Library not found" });
+        }
+        
+        // Return the library details
+        res.status(200).json(library);
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server Error" });
+      }
+};
+
