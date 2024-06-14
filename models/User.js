@@ -41,6 +41,7 @@ const userSchema = new mongoose.Schema({
         {   
             bookName: String,
             bookIsbn : Number,
+            imageofbook: String,
             book: { type: mongoose.Schema.Types.ObjectId, ref: "Book" },
             status: {
                 type: String,

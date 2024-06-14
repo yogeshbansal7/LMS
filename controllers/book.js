@@ -112,7 +112,7 @@ exports.createRequest = async (req, res) => {
   console.log("Creating Request")
     try {
         const user = await User.findById(userId);
-        if (!user) {
+        if (!user) { 
             return res.status(404).json({ error: "User not found" });
         }
         const book = await Book.findById(bookId);
@@ -124,7 +124,7 @@ exports.createRequest = async (req, res) => {
             return res.status(400).json({ error: "You have already requested this book" });
         }
 
-        const request = {bookName: book.name, bookIsbn: book.isbn , book: bookId, status: "pending" };
+        const request = {bookName: book.name, bookIsbn: book.isbn , book: bookId, status: "pending", imageofbook: book.imageUrl  };
         user.issuedBooks.push(request);
 
         book.quantity -= 1;
