@@ -1,4 +1,5 @@
-const User = require("../models/User")
+const Event = require("../models/Event")
+const { uploadImageToCloudinary } = require("../utils/imageUploader")
 
 exports.addevent = async(req, res) => {
     try {
